@@ -12,9 +12,9 @@ import com.heyzqt.girl.MainGame;
  */
 public abstract class GirlScreen implements Screen {
 
-	private OrthographicCamera mCamera;
-	private OrthographicCamera mUICamera;
-	private SpriteBatch mBatch;
+	protected OrthographicCamera mCamera;
+	protected OrthographicCamera mUICamera;
+	protected SpriteBatch mBatch;
 	private MainGame mGame;
 
 	public GirlScreen(MainGame game){

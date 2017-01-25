@@ -1,10 +1,10 @@
 package com.heyzqt.girl;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.heyzqt.screen.GameScreen;
+import com.heyzqt.screen.MainScreen;
 
 public class MainGame extends Game {
 
@@ -20,20 +20,28 @@ public class MainGame extends Game {
 	public static String TAG = "mygame";
 
 	// 视距宽度
-	public static final int ViewPort_WIDTH = 320;
+	public static final int ViewPort_WIDTH = 1280;
 
 	// 视距高度
-	public static final int ViewPort_HEIGHT = 240;
+	public static final int ViewPort_HEIGHT = 720;
+
+	private GameScreen mGameScreen;
+
+	private MainScreen mMainScreen;
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
 
 		mCamera = new OrthographicCamera();
-		mCamera.setToOrtho(false, ViewPort_WIDTH, ViewPort_WIDTH);
+		mCamera.setToOrtho(false, ViewPort_WIDTH, ViewPort_HEIGHT);
 
 		mUICamera = new OrthographicCamera();
 		mUICamera.setToOrtho(false,ViewPort_WIDTH,ViewPort_HEIGHT);
+
+		mMainScreen = new MainScreen(this);
+		mGameScreen = new GameScreen(this);
+		this.setScreen(mGameScreen);
 	}
 
 	public SpriteBatch getSpriteBatch(){
@@ -46,11 +54,5 @@ public class MainGame extends Game {
 
 	public OrthographicCamera getUICamera(){
 		return  mUICamera;
-	}
-
-	@Override
-	public void render () {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 	}
 }
