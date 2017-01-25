@@ -28,6 +28,8 @@ public abstract class GirlScreen implements Screen {
 		mUICamera = mGame.getUICamera();
 	}
 
+	public abstract void handleInput();
+
 	public abstract void update(float delta);
 
 	@Override
