@@ -3,6 +3,8 @@ package com.heyzqt.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -47,10 +49,17 @@ public class GameScreen extends GirlScreen {
 	//地图渲染器
 	private OrthoCachedTiledMapRenderer mCachedTiledMapRenderer;
 
-	Body mBody;
+	private Body mBody;
+
+	private MainGame mGame;
+
+	private SpriteBatch batch;
 
 	public GameScreen(MainGame game) {
 		super(game);
+
+		mGame = game;
+		batch = game.getSpriteBatch();
 
 		mWorld = new World(new Vector2(0, -9.8f), true);    //模拟重力环境
 		mDebugRenderer = new Box2DDebugRenderer();
@@ -162,6 +171,14 @@ public class GameScreen extends GirlScreen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		update(delta);
+
+		batch.setProjectionMatrix(mCamera.combined);
+		batch.begin();
+		batch.draw(mGame.mAssetManager.get("images/tree.png", Texture.class), 0, 0, 1280, 720);
+		batch.end();
+
+		mCachedTiledMapRenderer.setView(mCamera);
+		mCachedTiledMapRenderer.render();
 		//渲染物理世界
 		mDebugRenderer.render(mWorld, mBox2DCamera.combined);
 	}
