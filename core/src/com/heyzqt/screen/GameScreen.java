@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.Array;
 import com.heyzqt.girl.MainGame;
 import com.heyzqt.handle.Box2DContactListener;
 import com.heyzqt.handle.Constant;
+import com.heyzqt.sprite.Flame;
 import com.heyzqt.sprite.Protagonist;
 import com.heyzqt.sprite.Star;
 
@@ -52,7 +53,7 @@ public class GameScreen extends GirlScreen {
 	//地图高度
 	private float mMapHeight;
 	//地图编号
-	private static int level;
+	private static int level = 3;
 	//地图渲染器
 	private OrthoCachedTiledMapRenderer mCachedTiledMapRenderer;
 
@@ -71,6 +72,11 @@ public class GameScreen extends GirlScreen {
 	 * 星星数组
 	 */
 	private Array<Star> mStars;
+
+	/**
+	 * 火焰数组
+	 */
+	private Array<Flame> mFlames;
 
 	/**
 	 * 游戏渲染时间
@@ -102,6 +108,8 @@ public class GameScreen extends GirlScreen {
 		createMap();
 		//创建星星
 		createStar();
+		//创建火焰
+		createFlame();
 	}
 
 	/**
@@ -170,8 +178,13 @@ public class GameScreen extends GirlScreen {
 		}
 	}
 
+	@Override
+	public void pause() {
+		super.pause();
+	}
+
 	/**
-	 * 创建游戏角色
+	 * 创建主角
 	 */
 	private void createActor() {
 		//初始化刚体属性
@@ -187,7 +200,7 @@ public class GameScreen extends GirlScreen {
 		shape.setAsBox(15 / Constant.RATE, 20 / Constant.RATE);
 		fixtureDef.shape = shape;
 		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN;
+		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN|Constant.BLOCK_RED|Constant.BLOCK_BLUE;
 		//创建夹具
 		mBody.createFixture(fixtureDef).setUserData("box");
 
@@ -241,7 +254,7 @@ public class GameScreen extends GirlScreen {
 				y = ellipseMapObject.getEllipse().y / Constant.RATE;
 			}
 			//设置刚体位置
-			bodyDef.position.set(x,y);
+			bodyDef.position.set(x, y);
 			Body body = mWorld.createBody(bodyDef);
 			body.createFixture(fixtureDef).setUserData("star");
 
@@ -250,6 +263,51 @@ public class GameScreen extends GirlScreen {
 			body.setUserData(star);
 		}
 
+	}
+
+	/**
+	 * 创建火焰
+	 */
+	private void createFlame() {
+		mFlames = new Array<Flame>();
+
+		//火焰对象层
+		MapLayer mapLayer = mMap.getLayers().get("flame");
+		if (mapLayer == null) return;
+
+		//初始化火焰刚体形状
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.StaticBody;
+		CircleShape circleShape = new CircleShape();
+		circleShape.setRadius(8/Constant.RATE);
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = circleShape;
+		fixtureDef.isSensor = true;
+		fixtureDef.filter.categoryBits = Constant.FLAME;
+		fixtureDef.filter.maskBits = Constant.PLAYER;
+
+		//遍历flame对象层
+		for(MapObject object:mapLayer.getObjects()){
+			//火焰坐标
+			float x = 0;
+			float y = 0;
+			//获取对象坐标
+			if(object instanceof EllipseMapObject){
+				EllipseMapObject ellipseMapObject = (EllipseMapObject)object;
+				x = ellipseMapObject.getEllipse().x /Constant.RATE;
+				y = ellipseMapObject.getEllipse().y /Constant.RATE;
+			}
+
+			//设置火焰位置
+			bodyDef.position.set(x,y);
+			Body body = mWorld.createBody(bodyDef);
+			body.createFixture(fixtureDef).setUserData("flame");
+
+			Flame flame = new Flame(body);
+			mFlames.add(flame);
+
+			body.setUserData(flame);
+		}
 	}
 
 	@Override
@@ -267,6 +325,10 @@ public class GameScreen extends GirlScreen {
 		//画出星星
 		for (Star star : mStars) {
 			star.render(batch, stateTime);
+		}
+		//画出火焰
+		for(Flame flame:mFlames){
+			flame.render(batch,stateTime);
 		}
 		batch.end();
 

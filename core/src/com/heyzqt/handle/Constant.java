@@ -10,7 +10,7 @@ public class Constant {
 	//主角刚体碰撞属性
 	public static final short PLAYER = 4;
 	//红色图块碰撞属性
-	public static final short BLOCK_RED = 4;
+	public static final short BLOCK_RED = 6;
 	//绿色图块碰撞属性
 	public static final short BLOCK_GREEN = 8;
 	//蓝色图块碰撞属性
