@@ -3,7 +3,6 @@ package com.heyzqt.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -20,6 +19,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.heyzqt.girl.MainGame;
 import com.heyzqt.handle.Box2DContactListener;
 import com.heyzqt.handle.Constant;
+import com.heyzqt.sprite.Protagonist;
 
 /**
  * Created by heyzqt on 2017/1/21.
@@ -55,6 +55,16 @@ public class GameScreen extends GirlScreen {
 
 	private SpriteBatch batch;
 
+	/**
+	 * 创建游戏主角
+	 */
+	private Protagonist mProtagonist;
+
+	/**
+	 * 游戏渲染时间
+	 */
+	private float stateTime;
+
 	public GameScreen(MainGame game) {
 		super(game);
 
@@ -74,35 +84,15 @@ public class GameScreen extends GirlScreen {
 	//初始化
 	private void init() {
 
-		//初始化刚体属性
-		BodyDef bodyDef = new BodyDef();
-		FixtureDef fixtureDef = new FixtureDef();
-		PolygonShape shape = new PolygonShape();
-		mBody = mWorld.createBody(bodyDef);
-
-		//创建正方体模型
-		bodyDef.type = BodyDef.BodyType.DynamicBody;
-		bodyDef.position.set(200 / Constant.RATE, 350 / Constant.RATE);
-		mBody = mWorld.createBody(bodyDef);
-		shape.setAsBox(5 / Constant.RATE, 5 / Constant.RATE);
-		fixtureDef.shape = shape;
-		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN;
-		//创建夹具
-		mBody.createFixture(fixtureDef).setUserData("box");
-
-		//创建传感器
-		shape.setAsBox(3 / Constant.RATE, 3 / Constant.RATE, new Vector2(0, -5 / Constant.RATE), 0);
-		fixtureDef.shape = shape;
-		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN;
-		fixtureDef.isSensor = true;
-		mBody.createFixture(fixtureDef).setUserData("player");
-
+		//创建主角
+		createActor();
 		//创建地图
 		createMap();
 	}
 
+	/**
+	 * 创建游戏地图
+	 */
 	private void createMap() {
 		try {
 			mMap = new TmxMapLoader().load("maps/" + "level" + level + ".tmx");
@@ -166,15 +156,49 @@ public class GameScreen extends GirlScreen {
 		}
 	}
 
+	/**
+	 * 创建游戏角色
+	 */
+	private void createActor(){
+		//初始化刚体属性
+		BodyDef bodyDef = new BodyDef();
+		FixtureDef fixtureDef = new FixtureDef();
+		PolygonShape shape = new PolygonShape();
+		mBody = mWorld.createBody(bodyDef);
+
+		//创建正方体模型
+		bodyDef.type = BodyDef.BodyType.DynamicBody;
+		bodyDef.position.set(200 / Constant.RATE, 350 / Constant.RATE);
+		mBody = mWorld.createBody(bodyDef);
+		shape.setAsBox(15 / Constant.RATE, 20 / Constant.RATE);
+		fixtureDef.shape = shape;
+		fixtureDef.filter.categoryBits = Constant.PLAYER;
+		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN;
+		//创建夹具
+		mBody.createFixture(fixtureDef).setUserData("box");
+
+		//创建传感器 foot
+		shape.setAsBox(15 / Constant.RATE, 3 / Constant.RATE, new Vector2(0, -18 / Constant.RATE), 0);
+		fixtureDef.shape = shape;
+		fixtureDef.filter.categoryBits = Constant.PLAYER;
+		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN;
+		fixtureDef.isSensor = true;
+		mBody.createFixture(fixtureDef).setUserData("foot");
+
+		mProtagonist = new Protagonist(mBody);
+	}
+
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		update(delta);
+		stateTime+=delta;
 
 		batch.setProjectionMatrix(mCamera.combined);
 		batch.begin();
-		batch.draw(mGame.mAssetManager.get("images/tree.png", Texture.class), 0, 0, 1280, 720);
+		//batch.draw(mGame.mAssetManager.get("images/tree.png", Texture.class), 0, 0, 1280, 720);
+		mProtagonist.render(batch,stateTime);
 		batch.end();
 
 		mCachedTiledMapRenderer.setView(mCamera);
@@ -186,12 +210,8 @@ public class GameScreen extends GirlScreen {
 	@Override
 	public void handleInput() {
 		if (Gdx.input.justTouched()) {
-
 			System.out.println("click");
 			mBody.applyForceToCenter(0, 200f, true);
-//			if(mBox2DContactListener.isOnPlatform()){
-//				mBody.applyForceToCenter(0,200,true);
-//			}
 		}
 	}
 
