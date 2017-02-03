@@ -15,4 +15,8 @@ public class Constant {
 	public static final short BLOCK_GREEN = 8;
 	//蓝色图块碰撞属性
 	public static final short BLOCK_BLUE = 16;
+	//星星碰撞属性
+	public static final short STAR = 32;
+	//火焰碰撞属性
+	public static final short FLAME = 64;
 }

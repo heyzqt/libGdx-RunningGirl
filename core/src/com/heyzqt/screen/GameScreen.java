@@ -4,6 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.MapLayer;
+import com.badlogic.gdx.maps.MapLayers;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.EllipseMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
@@ -13,13 +17,16 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
+import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.heyzqt.girl.MainGame;
 import com.heyzqt.handle.Box2DContactListener;
 import com.heyzqt.handle.Constant;
 import com.heyzqt.sprite.Protagonist;
+import com.heyzqt.sprite.Star;
 
 /**
  * Created by heyzqt on 2017/1/21.
@@ -56,9 +63,14 @@ public class GameScreen extends GirlScreen {
 	private SpriteBatch batch;
 
 	/**
-	 * 创建游戏主角
+	 * 游戏主角
 	 */
 	private Protagonist mProtagonist;
+
+	/**
+	 * 星星数组
+	 */
+	private Array<Star> mStars;
 
 	/**
 	 * 游戏渲染时间
@@ -88,6 +100,8 @@ public class GameScreen extends GirlScreen {
 		createActor();
 		//创建地图
 		createMap();
+		//创建星星
+		createStar();
 	}
 
 	/**
@@ -159,7 +173,7 @@ public class GameScreen extends GirlScreen {
 	/**
 	 * 创建游戏角色
 	 */
-	private void createActor(){
+	private void createActor() {
 		//初始化刚体属性
 		BodyDef bodyDef = new BodyDef();
 		FixtureDef fixtureDef = new FixtureDef();
@@ -188,17 +202,72 @@ public class GameScreen extends GirlScreen {
 		mProtagonist = new Protagonist(mBody);
 	}
 
+	/**
+	 * 创建星星
+	 */
+	private void createStar() {
+		mStars = new Array<Star>();
+
+		//获取萝卜所在对象层
+		MapLayers mapLayers = mMap.getLayers();
+		MapLayer mapLayer = mapLayers.get("heart");
+		if (mapLayer == null) return;
+
+		//初始化萝卜形状
+		BodyDef bodyDef = new BodyDef();
+		bodyDef.type = BodyDef.BodyType.StaticBody;
+		//实例化萝卜属性
+		FixtureDef fixtureDef = new FixtureDef();
+		//实例化圆形
+		CircleShape circleShape = new CircleShape();
+		//设置圆半径
+		circleShape.setRadius(8 / Constant.RATE);
+		fixtureDef.shape = circleShape;
+		//设置传感器
+		fixtureDef.isSensor = true;
+		//设置刚体碰撞属性
+		fixtureDef.filter.categoryBits = Constant.STAR;
+		fixtureDef.filter.maskBits = Constant.PLAYER;
+
+		//遍历对象
+		for (MapObject object : mapLayer.getObjects()) {
+			//星星x，y轴坐标
+			float x = 0;
+			float y = 0;
+			//获取对象x，y坐标
+			if (object instanceof EllipseMapObject) {
+				EllipseMapObject ellipseMapObject = (EllipseMapObject) object;
+				x = ellipseMapObject.getEllipse().x / Constant.RATE;
+				y = ellipseMapObject.getEllipse().y / Constant.RATE;
+			}
+			//设置刚体位置
+			bodyDef.position.set(x,y);
+			Body body = mWorld.createBody(bodyDef);
+			body.createFixture(fixtureDef).setUserData("star");
+
+			Star star = new Star(body);
+			mStars.add(star);
+			body.setUserData(star);
+		}
+
+	}
+
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		update(delta);
-		stateTime+=delta;
+		stateTime += delta;
 
 		batch.setProjectionMatrix(mCamera.combined);
 		batch.begin();
 		//batch.draw(mGame.mAssetManager.get("images/tree.png", Texture.class), 0, 0, 1280, 720);
-		mProtagonist.render(batch,stateTime);
+		//画出主角
+		mProtagonist.render(batch, stateTime);
+		//画出星星
+		for (Star star : mStars) {
+			star.render(batch, stateTime);
+		}
 		batch.end();
 
 		mCachedTiledMapRenderer.setView(mCamera);
