@@ -7,8 +7,12 @@ public class Constant {
 
 	//物理世界与游戏世界单位换算比例。单位：100像素/米
 	public static final float RATE = 100;
-	//长方体刚体碰撞属性
-	public static final short GROUND = 2;
 	//主角刚体碰撞属性
 	public static final short PLAYER = 4;
+	//红色图块碰撞属性
+	public static final short BLOCK_RED = 4;
+	//绿色图块碰撞属性
+	public static final short BLOCK_GREEN = 8;
+	//蓝色图块碰撞属性
+	public static final short BLOCK_BLUE = 16;
 }
