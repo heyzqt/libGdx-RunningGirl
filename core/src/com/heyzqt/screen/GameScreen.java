@@ -3,21 +3,13 @@ package com.heyzqt.screen;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.heyzqt.girl.MainGame;
 import com.heyzqt.handle.Box2DContactListener;
 import com.heyzqt.handle.Constant;
@@ -37,8 +29,8 @@ public class GameScreen extends GirlScreen {
 	//声明刚体监听器
 	private Box2DContactListener mBox2DContactListener;
 
-	ImageButton button = new ImageButton(new TextureRegionDrawable(new TextureRegion(new Texture("badlogic.jpg"))));
-	Stage mStage;
+	Body mBody;
+
 	public GameScreen(MainGame game) {
 		super(game);
 
@@ -50,58 +42,45 @@ public class GameScreen extends GirlScreen {
 		//设置物理世界刚体监听器
 		mBox2DContactListener = new Box2DContactListener();
 		mWorld.setContactListener(mBox2DContactListener);
-		button.setPosition(300,300);
-		mStage = new Stage();
-		mStage.addActor(button);
-		Gdx.input.setInputProcessor(mStage);
-		button.addListener(new InputListener(){
-			@Override
-			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-				System.out.println("hello");
-				return true;
-			}
-		});
 	}
 
 	//初始化
 	private void init() {
+		FixtureDef fixtureDef = new FixtureDef();
+		PolygonShape shape = new PolygonShape();
+
 		//创建一个长方体刚体
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;
 		bodyDef.position.set(200 / Constant.RATE, 200 / Constant.RATE);
-		Body rectangle = mWorld.createBody(bodyDef);
+		mBody = mWorld.createBody(bodyDef);
 		//声明一个多边形
-		PolygonShape shape = new PolygonShape();
 		shape.setAsBox(50 / Constant.RATE, 5 / Constant.RATE);
 		//创建FixtureDef
-		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.filter.categoryBits = Constant.GROUND;
-		fixtureDef.filter.maskBits = Constant.BALL | Constant.BOX;
-		rectangle.createFixture(fixtureDef).setUserData("ground");
+		fixtureDef.filter.maskBits = Constant.PLAYER;
+		mBody.createFixture(fixtureDef).setUserData("ground");
 
 		//创建正方体模型
 		BodyDef bodyDef1 = new BodyDef();
 		bodyDef1.type = BodyDef.BodyType.DynamicBody;
-		bodyDef1.position.set(200 / Constant.RATE, 250 / Constant.RATE);
-		Body square = mWorld.createBody(bodyDef1);
+		bodyDef1.position.set(200 / Constant.RATE, 350 / Constant.RATE);
+		mBody = mWorld.createBody(bodyDef1);
 		shape.setAsBox(5 / Constant.RATE, 5 / Constant.RATE);
 		fixtureDef.shape = shape;
-		fixtureDef.filter.categoryBits = Constant.BOX;
+		fixtureDef.filter.categoryBits = Constant.PLAYER;
 		fixtureDef.filter.maskBits = Constant.GROUND;
-		square.createFixture(fixtureDef).setUserData("box");
+		mBody.createFixture(fixtureDef).setUserData("box");
 
-		//创建圆形刚体
-		BodyDef bodyDef2 = new BodyDef();
-		bodyDef2.type = BodyDef.BodyType.DynamicBody;
-		bodyDef2.position.set(230 / Constant.RATE, 250 / Constant.RATE);
-		Body circle = mWorld.createBody(bodyDef2);
-		CircleShape circleShape = new CircleShape();
-		circleShape.setRadius(5/Constant.RATE);
-		fixtureDef.shape = circleShape;
-		fixtureDef.filter.categoryBits = Constant.BALL;
+		//设置传感器
+		shape.setAsBox(3 / Constant.RATE, 3 / Constant.RATE, new Vector2(0, -5 / Constant.RATE), 0);
+		fixtureDef.shape = shape;
+		fixtureDef.filter.categoryBits = Constant.PLAYER;
 		fixtureDef.filter.maskBits = Constant.GROUND;
-		circle.createFixture(fixtureDef).setUserData("ball");
+		fixtureDef.isSensor = true;
+		mBody.createFixture(fixtureDef).setUserData("player");
+
 	}
 
 	@Override
@@ -111,17 +90,24 @@ public class GameScreen extends GirlScreen {
 		update(delta);
 		//渲染物理世界
 		mDebugRenderer.render(mWorld, mBox2DCamera.combined);
-
-		mStage.act();
-		mStage.draw();
 	}
 
 	@Override
 	public void handleInput() {
+		if(Gdx.input.justTouched()){
+
+			System.out.println("click");
+			mBody.applyForceToCenter(0,200f,true);
+//			if(mBox2DContactListener.isOnPlatform()){
+//				mBody.applyForceToCenter(0,200,true);
+//			}
+		}
 	}
 
 	@Override
 	public void update(float delta) {
+
+		handleInput();
 		//更新物理世界状态
 		mWorld.step(delta, 6, 2);
 	}

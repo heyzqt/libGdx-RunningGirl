@@ -9,8 +9,6 @@ public class Constant {
 	public static final float RATE = 100;
 	//长方体刚体碰撞属性
 	public static final short GROUND = 2;
-	//正方体刚体碰撞属性
-	public static final short BOX = 4;
-	//圆球刚体碰撞属性
-	public static final short BALL = 8;
+	//主角刚体碰撞属性
+	public static final short PLAYER = 4;
 }

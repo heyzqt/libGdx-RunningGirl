@@ -18,12 +18,12 @@ public class Box2DContactListener implements ContactListener {
 		//获取刚体碰撞夹具B
 		Fixture fixtureB = contact.getFixtureB();
 		//打印刚体夹具用户数据
-		System.out.println(fixtureA.getUserData()+"-->"+fixtureB.getUserData());
+		System.out.println("begin : "+fixtureA.getUserData()+"-->"+fixtureB.getUserData());
 	}
 
 	@Override
 	public void endContact(Contact contact) {
-
+		System.out.println("end : "+contact.getFixtureA().getUserData()+"-->"+contact.getFixtureB().getUserData());
 	}
 
 	@Override
