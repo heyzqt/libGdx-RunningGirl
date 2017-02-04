@@ -25,10 +25,10 @@ public class MainGame extends Game {
 	public static String TAG = "mygame";
 
 	// 视距宽度
-	public static final int ViewPort_WIDTH = 1280;
+	public static final int ViewPort_WIDTH = 320;
 
 	// 视距高度
-	public static final int ViewPort_HEIGHT = 720;
+	public static final int ViewPort_HEIGHT = 240;
 
 	private GameScreen mGameScreen;
 

@@ -28,6 +28,7 @@ public class Diamond {
 	}
 
 	public void render(SpriteBatch batch) {
+		batch.begin();
 		//获取主角目标碰撞属性
 		short bits = mProtagonist.getBody().getFixtureList().first()
 				.getFilterData().maskBits;
@@ -41,5 +42,6 @@ public class Diamond {
 		if ((bits & Constant.BLOCK_BLUE) != 0) {
 			batch.draw(mDiamonds[2], 780, 560);
 		}
+		batch.end();
 	}
 }

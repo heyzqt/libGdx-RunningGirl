@@ -30,6 +30,7 @@ import com.heyzqt.sprite.Diamond;
 import com.heyzqt.sprite.Flame;
 import com.heyzqt.sprite.Protagonist;
 import com.heyzqt.sprite.Star;
+import com.heyzqt.sprite.Tree;
 
 /**
  * Created by heyzqt on 2017/1/21.
@@ -95,6 +96,11 @@ public class GameScreen extends GirlScreen {
 	 */
 	private boolean isBox2DDebug = true;
 
+	/**
+	 * 游戏背景树
+	 */
+	private Tree mTree;
+
 	public GameScreen(MainGame game) {
 		super(game);
 
@@ -124,6 +130,8 @@ public class GameScreen extends GirlScreen {
 		createFlame();
 		//初始化钻石
 		mDiamond = new Diamond(mProtagonist);
+		//初始化树
+		mTree = new Tree();
 	}
 
 	/**
@@ -372,9 +380,11 @@ public class GameScreen extends GirlScreen {
 		adjustCamera();
 		mCamera.update();
 
+		batch.setProjectionMatrix(mUICamera.combined);
+		//画出背景树
+		mTree.render(batch);
+
 		batch.setProjectionMatrix(mCamera.combined);
-		batch.begin();
-		//batch.draw(mGame.mAssetManager.get("images/tree.png", Texture.class), 0, 0, 1280, 720);
 		//画出主角
 		mProtagonist.render(batch, stateTime);
 		//画出钻石
@@ -387,7 +397,6 @@ public class GameScreen extends GirlScreen {
 		for (Flame flame : mFlames) {
 			flame.render(batch, stateTime);
 		}
-		batch.end();
 
 		mCachedTiledMapRenderer.setView(mCamera);
 		mCachedTiledMapRenderer.render();

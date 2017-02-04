@@ -41,9 +41,11 @@ public class GameSprite {
 	}
 
 	public void render(SpriteBatch batch, float delta) {
+		batch.begin();
 		batch.draw(mAnimation.getKeyFrame(delta, true),
 				mBody.getPosition().x * Constant.RATE - mWidth / 2,
 				mBody.getPosition().y * Constant.RATE - mHeight / 2);
+		batch.end();
 	}
 
 	public Body getBody(){
