@@ -53,7 +53,7 @@ public class GameScreen extends GirlScreen {
 	//地图高度
 	private float mMapHeight;
 	//地图编号
-	private static int level = 3;
+	private static int level = 1;
 	//地图渲染器
 	private OrthoCachedTiledMapRenderer mCachedTiledMapRenderer;
 
@@ -173,7 +173,7 @@ public class GameScreen extends GirlScreen {
 				fixtureDef.filter.maskBits = Constant.PLAYER;
 				//设置传感器
 				fixtureDef.isSensor = false;
-				mWorld.createBody(bodyDef).createFixture(fixtureDef);
+				mWorld.createBody(bodyDef).createFixture(fixtureDef).setUserData("block");
 			}
 		}
 	}
@@ -196,19 +196,22 @@ public class GameScreen extends GirlScreen {
 		//创建正方体模型
 		bodyDef.type = BodyDef.BodyType.DynamicBody;
 		bodyDef.position.set(200 / Constant.RATE, 350 / Constant.RATE);
+		//设置水平方向速度
+		bodyDef.linearVelocity.set(0.3f, 0);
 		mBody = mWorld.createBody(bodyDef);
 		shape.setAsBox(15 / Constant.RATE, 20 / Constant.RATE);
 		fixtureDef.shape = shape;
 		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN|Constant.BLOCK_RED|Constant.BLOCK_BLUE;
+		fixtureDef.filter.maskBits = Constant.STAR | Constant.FLAME;
 		//创建夹具
-		mBody.createFixture(fixtureDef).setUserData("box");
+		mBody.createFixture(fixtureDef).setUserData("player");
 
 		//创建传感器 foot
 		shape.setAsBox(15 / Constant.RATE, 3 / Constant.RATE, new Vector2(0, -18 / Constant.RATE), 0);
 		fixtureDef.shape = shape;
 		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN;
+		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN | Constant.BLOCK_RED
+				| Constant.BLOCK_BLUE;
 		fixtureDef.isSensor = true;
 		mBody.createFixture(fixtureDef).setUserData("foot");
 
@@ -256,7 +259,7 @@ public class GameScreen extends GirlScreen {
 			//设置刚体位置
 			bodyDef.position.set(x, y);
 			Body body = mWorld.createBody(bodyDef);
-			body.createFixture(fixtureDef).setUserData("star");
+			body.createFixture(fixtureDef).setUserData("heart");
 
 			Star star = new Star(body);
 			mStars.add(star);
@@ -279,7 +282,7 @@ public class GameScreen extends GirlScreen {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;
 		CircleShape circleShape = new CircleShape();
-		circleShape.setRadius(8/Constant.RATE);
+		circleShape.setRadius(8 / Constant.RATE);
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = circleShape;
 		fixtureDef.isSensor = true;
@@ -287,19 +290,19 @@ public class GameScreen extends GirlScreen {
 		fixtureDef.filter.maskBits = Constant.PLAYER;
 
 		//遍历flame对象层
-		for(MapObject object:mapLayer.getObjects()){
+		for (MapObject object : mapLayer.getObjects()) {
 			//火焰坐标
 			float x = 0;
 			float y = 0;
 			//获取对象坐标
-			if(object instanceof EllipseMapObject){
-				EllipseMapObject ellipseMapObject = (EllipseMapObject)object;
-				x = ellipseMapObject.getEllipse().x /Constant.RATE;
-				y = ellipseMapObject.getEllipse().y /Constant.RATE;
+			if (object instanceof EllipseMapObject) {
+				EllipseMapObject ellipseMapObject = (EllipseMapObject) object;
+				x = ellipseMapObject.getEllipse().x / Constant.RATE;
+				y = ellipseMapObject.getEllipse().y / Constant.RATE;
 			}
 
 			//设置火焰位置
-			bodyDef.position.set(x,y);
+			bodyDef.position.set(x, y);
 			Body body = mWorld.createBody(bodyDef);
 			body.createFixture(fixtureDef).setUserData("flame");
 
@@ -327,8 +330,8 @@ public class GameScreen extends GirlScreen {
 			star.render(batch, stateTime);
 		}
 		//画出火焰
-		for(Flame flame:mFlames){
-			flame.render(batch,stateTime);
+		for (Flame flame : mFlames) {
+			flame.render(batch, stateTime);
 		}
 		batch.end();
 
@@ -352,5 +355,25 @@ public class GameScreen extends GirlScreen {
 		handleInput();
 		//更新物理世界状态
 		mWorld.step(delta, 6, 2);
+
+		//获取被移除的刚体数组
+		Array<Body> removeBodies = mBox2DContactListener.getRemoveBodies();
+		if (removeBodies.size != 0) {
+			System.out.println("removeBodies : " + removeBodies.get(0));
+		}
+		//遍历刚体移除刚体
+		for (Body body : removeBodies) {
+			mStars.removeValue((Star) body.getUserData(), true);
+			//世界销毁刚体
+			mWorld.destroyBody(body);
+			//收集星星
+			mProtagonist.collectStars();
+		}
+		removeBodies.clear();
+
+		//判断刚体是否碰撞火焰
+		if (mBox2DContactListener.isFlameContact()) {
+			System.out.println("碰撞火焰");
+		}
 	}
 }
