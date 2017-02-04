@@ -72,6 +72,10 @@ public class MainGame extends Game {
 		mMainScreen = new MainScreen(this);
 		mGameScreen = new GameScreen(this);
 		this.setScreen(mMainScreen);
+
+		//加载游戏背景音乐
+		Music music = mAssetManager.get("audio/music.ogg");
+		music.play();
 	}
 
 	public SpriteBatch getSpriteBatch() {

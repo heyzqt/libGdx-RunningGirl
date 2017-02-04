@@ -1,6 +1,7 @@
 package com.heyzqt.screen;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -462,6 +463,9 @@ public class GameScreen extends GirlScreen {
 			mWorld.destroyBody(body);
 			//收集星星
 			mProtagonist.collectStars();
+			//收集星星时的音效
+			Sound sound = MainGame.mAssetManager.get("audio/diamond.wav");
+			sound.play();
 		}
 		removeBodies.clear();
 
@@ -479,6 +483,9 @@ public class GameScreen extends GirlScreen {
 		if (mProtagonist.getBody().getPosition().y < 0) {
 			mGame.mMainScreen.init();
 			MainScreen.isStart = true;
+			//播放掉落音效
+			Sound sound = MainGame.mAssetManager.get("audio/contact.wav");
+			sound.play();
 			mGame.setScreen(mGame.mMainScreen);
 		}
 
@@ -486,12 +493,19 @@ public class GameScreen extends GirlScreen {
 		if (mBox2DContactListener.isFlameContact()) {
 			mGame.mMainScreen.init();
 			MainScreen.isStart = true;
+			//播放碰撞火焰音效
+			Sound sound = MainGame.mAssetManager.get("audio/contact.wav");
+			sound.play();
 			mGame.setScreen(mGame.mMainScreen);
 		}
 
-		if(mProtagonist.getBody().getLinearVelocity().x<0.001f){
+		//碰到砖块 横向速度为0
+		if (mProtagonist.getBody().getLinearVelocity().x < 0.001f) {
 			mGame.mMainScreen.init();
 			MainScreen.isStart = true;
+			//播放碰撞砖块音效
+			Sound sound = MainGame.mAssetManager.get("audio/contact.wav");
+			sound.play();
 			mGame.setScreen(mGame.mMainScreen);
 		}
 	}
