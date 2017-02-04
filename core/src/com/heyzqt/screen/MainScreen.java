@@ -42,7 +42,7 @@ public class MainScreen extends GirlScreen {
 	private Image mStartBtn;
 
 	//判断当前场景
-	private boolean isStart = true;
+	public static boolean isStart = true;
 
 	public MainScreen(MainGame game) {
 		super(game);
@@ -50,7 +50,7 @@ public class MainScreen extends GirlScreen {
 		init();
 	}
 
-	private void init() {
+	public void init() {
 		mStage = new Stage(new StretchViewport(MainGame.ViewPort_WIDTH, MainGame.ViewPort_HEIGHT));
 		Gdx.input.setInputProcessor(mStage);
 		mBatch = new SpriteBatch();

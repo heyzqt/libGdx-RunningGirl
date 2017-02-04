@@ -465,9 +465,34 @@ public class GameScreen extends GirlScreen {
 		}
 		removeBodies.clear();
 
+		//主角通关
+		if (mProtagonist.getBody().getPosition().x * Constant.RATE > tileSize * mMapWidth) {
+			//重新初始化所有场景
+			mGame.mMainScreen.init();
+			//绘制选关界面
+			MainScreen.isStart = false;
+			//置顶当前游戏主界面
+			mGame.setScreen(mGame.mMainScreen);
+		}
+
+		//主角死亡 1.掉到地图之外 2.碰到火焰 3.碰到砖块 横向速度为0时
+		if (mProtagonist.getBody().getPosition().y < 0) {
+			mGame.mMainScreen.init();
+			MainScreen.isStart = true;
+			mGame.setScreen(mGame.mMainScreen);
+		}
+
 		//判断刚体是否碰撞火焰
 		if (mBox2DContactListener.isFlameContact()) {
-			System.out.println("碰撞火焰");
+			mGame.mMainScreen.init();
+			MainScreen.isStart = true;
+			mGame.setScreen(mGame.mMainScreen);
+		}
+
+		if(mProtagonist.getBody().getLinearVelocity().x<0.001f){
+			mGame.mMainScreen.init();
+			MainScreen.isStart = true;
+			mGame.setScreen(mGame.mMainScreen);
 		}
 	}
 }

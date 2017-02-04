@@ -30,9 +30,9 @@ public class MainGame extends Game {
 	// 视距高度
 	public static final int ViewPort_HEIGHT = 240;
 
-	private GameScreen mGameScreen;
+	public GameScreen mGameScreen;
 
-	private MainScreen mMainScreen;
+	public MainScreen mMainScreen;
 
 	//声明资源加载器
 	public static AssetManager mAssetManager;
