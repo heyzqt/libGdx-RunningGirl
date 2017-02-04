@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.utils.Array;
 import com.heyzqt.girl.MainGame;
 import com.heyzqt.handle.Box2DContactListener;
 import com.heyzqt.handle.Constant;
+import com.heyzqt.sprite.Diamond;
 import com.heyzqt.sprite.Flame;
 import com.heyzqt.sprite.Protagonist;
 import com.heyzqt.sprite.Star;
@@ -53,7 +55,7 @@ public class GameScreen extends GirlScreen {
 	//地图高度
 	private float mMapHeight;
 	//地图编号
-	private static int level = 1;
+	private static int level = 0;
 	//地图渲染器
 	private OrthoCachedTiledMapRenderer mCachedTiledMapRenderer;
 
@@ -77,6 +79,11 @@ public class GameScreen extends GirlScreen {
 	 * 火焰数组
 	 */
 	private Array<Flame> mFlames;
+
+	/**
+	 * 钻石精灵
+	 */
+	private Diamond mDiamond;
 
 	/**
 	 * 游戏渲染时间
@@ -110,6 +117,8 @@ public class GameScreen extends GirlScreen {
 		createStar();
 		//创建火焰
 		createFlame();
+		//初始化钻石
+		mDiamond = new Diamond(mProtagonist);
 	}
 
 	/**
@@ -202,7 +211,8 @@ public class GameScreen extends GirlScreen {
 		shape.setAsBox(15 / Constant.RATE, 20 / Constant.RATE);
 		fixtureDef.shape = shape;
 		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.STAR | Constant.FLAME;
+		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN | Constant.BLOCK_RED | Constant.BLOCK_BLUE
+				| Constant.STAR | Constant.FLAME;
 		//创建夹具
 		mBody.createFixture(fixtureDef).setUserData("player");
 
@@ -210,8 +220,7 @@ public class GameScreen extends GirlScreen {
 		shape.setAsBox(15 / Constant.RATE, 3 / Constant.RATE, new Vector2(0, -18 / Constant.RATE), 0);
 		fixtureDef.shape = shape;
 		fixtureDef.filter.categoryBits = Constant.PLAYER;
-		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN | Constant.BLOCK_RED
-				| Constant.BLOCK_BLUE;
+		fixtureDef.filter.maskBits = Constant.BLOCK_GREEN | Constant.BLOCK_RED | Constant.BLOCK_BLUE;
 		fixtureDef.isSensor = true;
 		mBody.createFixture(fixtureDef).setUserData("foot");
 
@@ -325,6 +334,8 @@ public class GameScreen extends GirlScreen {
 		//batch.draw(mGame.mAssetManager.get("images/tree.png", Texture.class), 0, 0, 1280, 720);
 		//画出主角
 		mProtagonist.render(batch, stateTime);
+		//画出钻石
+		mDiamond.render(batch);
 		//画出星星
 		for (Star star : mStars) {
 			star.render(batch, stateTime);
@@ -344,9 +355,35 @@ public class GameScreen extends GirlScreen {
 	@Override
 	public void handleInput() {
 		if (Gdx.input.justTouched()) {
-			System.out.println("click");
+			//竖直方向上给一个200N的力
 			mBody.applyForceToCenter(0, 200f, true);
 		}
+	}
+
+	/**
+	 * 切换钻石颜色
+	 */
+	public void switchDiamond() {
+		//获取主角foot目标碰撞属性
+		Filter filter = mProtagonist.getBody().getFixtureList().get(1).getFilterData();
+		short bits = filter.maskBits;
+
+		//设置foot过滤器属性
+		if (bits == Constant.BLOCK_RED) {
+			bits = Constant.BLOCK_GREEN;
+		} else if (bits == Constant.BLOCK_GREEN) {
+			bits = Constant.BLOCK_BLUE;
+		} else if (bits == Constant.BLOCK_BLUE) {
+			bits = Constant.BLOCK_RED;
+		}
+		filter.maskBits = bits;
+		mProtagonist.getBody().getFixtureList().get(1).setFilterData(filter);
+
+		//设置主角player过滤器属性
+		bits |= Constant.STAR | Constant.FLAME;
+		filter.maskBits = bits;
+		mProtagonist.getBody().getFixtureList().get(0).setFilterData(filter);
+
 	}
 
 	@Override
@@ -358,9 +395,6 @@ public class GameScreen extends GirlScreen {
 
 		//获取被移除的刚体数组
 		Array<Body> removeBodies = mBox2DContactListener.getRemoveBodies();
-		if (removeBodies.size != 0) {
-			System.out.println("removeBodies : " + removeBodies.get(0));
-		}
 		//遍历刚体移除刚体
 		for (Body body : removeBodies) {
 			mStars.removeValue((Star) body.getUserData(), true);
