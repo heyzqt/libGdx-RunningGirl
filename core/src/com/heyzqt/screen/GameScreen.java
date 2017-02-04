@@ -56,7 +56,7 @@ public class GameScreen extends GirlScreen {
 	//地图高度(y方向的网格数)
 	private float mMapHeight;
 	//地图编号
-	private static int level = 0;
+	public static int level = 0;
 	//地图渲染器
 	private OrthoCachedTiledMapRenderer mCachedTiledMapRenderer;
 

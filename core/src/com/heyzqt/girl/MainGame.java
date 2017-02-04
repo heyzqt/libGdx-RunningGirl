@@ -71,7 +71,7 @@ public class MainGame extends Game {
 
 		mMainScreen = new MainScreen(this);
 		mGameScreen = new GameScreen(this);
-		this.setScreen(mGameScreen);
+		this.setScreen(mMainScreen);
 	}
 
 	public SpriteBatch getSpriteBatch() {
