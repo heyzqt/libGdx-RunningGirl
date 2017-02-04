@@ -50,9 +50,9 @@ public class GameScreen extends GirlScreen {
 	TiledMap mMap;
 	//地图瓦片大小
 	private float tileSize;
-	//地图宽度
+	//地图宽度(x方向的网格数)
 	private float mMapWidth;
-	//地图高度
+	//地图高度(y方向的网格数)
 	private float mMapHeight;
 	//地图编号
 	private static int level = 0;
@@ -89,6 +89,11 @@ public class GameScreen extends GirlScreen {
 	 * 游戏渲染时间
 	 */
 	private float stateTime;
+
+	/**
+	 * 物理世界渲染变量
+	 */
+	private boolean isBox2DDebug = true;
 
 	public GameScreen(MainGame game) {
 		super(game);
@@ -322,12 +327,50 @@ public class GameScreen extends GirlScreen {
 		}
 	}
 
+	/**
+	 * 调整游戏相机
+	 */
+	private void adjustCamera() {
+		//当相机锚点x坐标小于相机视距一半时，不再移动相机
+		if (mCamera.position.x < mCamera.viewportWidth / 2) {
+			mCamera.position.x = mCamera.viewportWidth / 2;
+		}
+
+		//当相机锚点x坐标大于地图宽度时，不再移动相机
+		if (mCamera.position.x > (mMapWidth * tileSize - mCamera.viewportWidth / 2)) {
+			mCamera.position.x = mMapWidth * tileSize - mCamera.viewportWidth / 2;
+		}
+	}
+
+	/**
+	 * 调整物理世界渲染相机
+	 */
+	private void adjustBox2DCamera() {
+		//当物理世界相机锚点x坐标小于相机视距一半时，不再移动相机
+		if (mBox2DCamera.position.x < mBox2DCamera.viewportWidth / 2) {
+			mBox2DCamera.position.x = mBox2DCamera.viewportWidth / 2;
+		}
+
+		//当物理相机锚点x坐标大于地图宽度时，不再移动相机
+		if (mBox2DCamera.position.x > (mMapWidth * tileSize - mBox2DCamera.viewportWidth / 2)) {
+			mBox2DCamera.position.x = mMapWidth * tileSize - mBox2DCamera.viewportWidth / 2;
+		}
+	}
+
+
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		update(delta);
 		stateTime += delta;
+
+		//设置相机投影矩阵锚点位置
+		mCamera.position.set(mProtagonist.getPosition().x * Constant.RATE + MainGame.ViewPort_WIDTH / 4,
+				MainGame.ViewPort_HEIGHT / 2, 0);
+		//调整游戏相机
+		adjustCamera();
+		mCamera.update();
 
 		batch.setProjectionMatrix(mCamera.combined);
 		batch.begin();
@@ -348,8 +391,16 @@ public class GameScreen extends GirlScreen {
 
 		mCachedTiledMapRenderer.setView(mCamera);
 		mCachedTiledMapRenderer.render();
-		//渲染物理世界
-		mDebugRenderer.render(mWorld, mBox2DCamera.combined);
+
+		if (isBox2DDebug) {
+			mBox2DCamera.position.set(mProtagonist.getPosition().x + MainGame.ViewPort_WIDTH / 4 / Constant.RATE,
+					MainGame.ViewPort_HEIGHT / 2 / Constant.RATE, 0);
+			//调整2D相机
+			adjustBox2DCamera();
+			mBox2DCamera.update();
+			//渲染物理世界
+			mDebugRenderer.render(mWorld, mBox2DCamera.combined);
+		}
 	}
 
 	@Override
