@@ -361,8 +361,8 @@ public class GameScreen extends GirlScreen {
 		}
 
 		//当物理相机锚点x坐标大于地图宽度时，不再移动相机
-		if (mBox2DCamera.position.x > (mMapWidth * tileSize - mBox2DCamera.viewportWidth / 2)) {
-			mBox2DCamera.position.x = mMapWidth * tileSize - mBox2DCamera.viewportWidth / 2;
+		if (mBox2DCamera.position.x > (mMapWidth / Constant.RATE * tileSize - mBox2DCamera.viewportWidth / 2)) {
+			mBox2DCamera.position.x = mMapWidth / Constant.RATE * tileSize - mBox2DCamera.viewportWidth / 2;
 		}
 	}
 
